@@ -1,4 +1,6 @@
 # Django settings for truespeak project.
+import os
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -11,7 +13,7 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': '', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': '',                      # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         'USER': '',
@@ -102,10 +104,10 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'truespeak.urls'
+ROOT_URLCONF = 'mhf.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'truespeak.wsgi.application'
+WSGI_APPLICATION = 'mhf.wsgi.application'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -120,6 +122,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'mhf',
+    'south'
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
