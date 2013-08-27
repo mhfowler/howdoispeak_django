@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, include, url
-from mhf.views import viewWrapper, home, redirect
+from mhfowler.mhf.views import viewWrapper, home, redirect
 
 urlpatterns = patterns('',
 
