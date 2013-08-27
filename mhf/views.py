@@ -13,4 +13,4 @@ def viewWrapper(view):
 
 
 def home(request):
-    return HttpResponse("this is max fowler's website!")
+    return HttpResponse("Miley do what she want doe")

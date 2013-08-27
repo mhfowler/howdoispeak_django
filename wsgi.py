@@ -1,5 +1,5 @@
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mhfowler.settings.live")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.live")
 
 from django.core.wsgi import get_wsgi_application
 from dj_static import Cling

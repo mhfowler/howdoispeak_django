@@ -1,4 +1,4 @@
-from mhfowler.settings.common import *
+from settings.common import *
 import dj_database_url
 
 if os.environ.has_key('DATABASE_URL'):

@@ -1,4 +1,4 @@
-from mhfowler.settings.common import *
+from settings.common import *
 
 DATABASES = {
     'default': {
