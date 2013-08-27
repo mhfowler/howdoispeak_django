@@ -23,5 +23,11 @@ class XModel(models.Model):
         abstract = True
 
 
+#-----------------------------------------------------------------------------------------------------------------------
+# a number for keeping track of stuff
+#-----------------------------------------------------------------------------------------------------------------------
+class Stat(XModel):
+    name = models.CharField(max_length=100)
+    number = models.IntegerField(default=0)
 
 

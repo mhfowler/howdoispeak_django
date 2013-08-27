@@ -1,7 +1,7 @@
 # Django settings
 import os
 import json
-PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+PROJECT_PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 # read secrets from json
 SECRETS_PATH = os.path.join(PROJECT_PATH, "secret.json")
