@@ -5,7 +5,11 @@ PROJECT_PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 # read secrets from json
 SECRETS_PATH = os.path.join(PROJECT_PATH, "secret.json")
-SECRETS_DICT = json.loads(open(SECRETS_PATH, "r").read())
+if os.environ.get("LOCAL"):
+    SECRETS_DICT = json.loads(open(SECRETS_PATH, "r").read())
+else:
+    SECRETS_ENV = os.environ.get("SECRETS")
+    SECRETS_DICT = json.loads(SECRETS_ENV)
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
