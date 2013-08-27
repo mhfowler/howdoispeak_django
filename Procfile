@@ -1,1 +1,1 @@
-web: gunicorn wsgi.wsgi -b 0.0.0.0:$PORT
+web: gunicorn mhfowler.wsgi:application -b 0.0.0.0:$PORT
