@@ -11,6 +11,11 @@ else:
     SECRETS_ENV = os.environ.get("SECRETS")
     SECRETS_DICT = json.loads(SECRETS_ENV)
 
+def getS3Credentials():
+    aws_access_key_id = SECRETS_DICT["AWS_ACCESS_KEY_ID"]
+    aws_secret_access_key = SECRETS_DICT["AWS_SECRET_ACCESS_KEY"]
+    return aws_access_key_id, aws_secret_access_key
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -119,6 +124,7 @@ ROOT_URLCONF = 'urls'
 WSGI_APPLICATION = 'wsgi.application'
 
 TEMPLATE_DIRS = (
+    os.path.join(PROJECT_PATH, "templates")
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -131,7 +137,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mhf',
+    'hdis',
     'south'
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',

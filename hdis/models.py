@@ -23,11 +23,13 @@ class XModel(models.Model):
         abstract = True
 
 
-#-----------------------------------------------------------------------------------------------------------------------
-# a number for keeping track of stuff
-#-----------------------------------------------------------------------------------------------------------------------
-class Stat(XModel):
-    name = models.CharField(max_length=100)
-    number = models.IntegerField(default=0)
+# ------------------------------------------------------------------------
+# User Object keeps track of users pins, as well as where they are in the processing pipeline
+# ------------------------------------------------------------------------
 
-
+class HowDoISpeakUser(XModel):
+    email = models.CharField(max_length=500)
+    enqueued = models.BooleanField(default=False)
+    processed = models.BooleanField(default=False)
+    created_when = models.DateTimeField(auto_now_add=True, blank=True)
+    user_pin = models.CharField(max_length=100)

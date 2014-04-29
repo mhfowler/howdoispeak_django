@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>HowDoISpeak?</title>
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="shortcut icon" type="image/x-icon">
+
+    <!-- CSS -->
+    <link href="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/css/default.css" rel="stylesheet">
+    <link href="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/css/font-awesome.min.css" rel="stylesheet">
+    <link href="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/css/flexslider.css" rel="stylesheet">
+    <link href="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/css/magnific-popup.css" rel="stylesheet">
+    <link href="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/css/owl-carousel/owl.carousel.css" rel="stylesheet">
+    <link href="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/css/owl-carousel/owl.theme.css" rel="stylesheet">
+
+    <!-- Add custom CSS here -->
+    <link href="css/custom.css" rel="stylesheet">
+
+    <!-- Google fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+
+    <style>
+        .lead {
+            margin-bottom:25px;
+        }
+        #hero {
+            padding-bottom:10px;
+        }
+        .face-pic {
+            margin-left:20%;
+        }
+    </style>
+
+</head>
+<body>
+<!-- Hero -->
+<section id="hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-sm-6">
+                <div class="intro">
+                    <h1>How Do You Speak?</h1>
+                    <p class="lead">For my <a href="http://cs.brown.edu/courses/csci1951-a/">Data Science</a> final project,
+                        I am building an app which analyzes the words you use in your text messages and tells you things about yourself.
+                        The app will answer questions like:
+                    </p>
+                    <ul class="lead">
+                        <li>which words do you use most frequently compared to average?</li>
+                        <li>which friends do you send the happiest sounding texts to?</li>
+                        <li>how often do you use words that have to do with politics/sports/partying/studying compared to your friends?</li>
+                    </ul>
+                    <p class="lead">
+                        The more data I have to work with the better the data analysis will be.
+                        Anyone who uses an iPhone and backs there iPhone up on a Mac can participate (and I will send you your results!).
+                        To participate in the project all you have to do is:
+                    </p>
+                    <ol class="lead">
+                        <li>Click the download link below (it will download a .zip file).</li>
+                        <li>Double click howdoispeak.app.zip to unzip it.</li>
+                        <li>Right click on howdoispeak.app and select open to securely upload your SMS word frequency data to the HowDoISpeak server.</li>
+                    </ol>
+
+                    <div class="buttons">
+                        <a href="https://s3.amazonaws.com/mhfowler/howdoispeak.app.zip" class="btn btn-1 btn-lg"><i class="fa fa-download icon"></i>Download</a>
+                        <a href="https://github.com/mhfowler/howdoispeak" target="_blank" class="btn btn-link btn-lg"><i class="fa fa-arrow-circle-o-right"></i> Learn more</a>
+                    </div>
+
+                    <div>
+                        <p class="lead" style="margin-bottom:100px">
+                            <strong>Your text messages are never saved or uploaded &mdash; howdoispeak.app locally calculates your SMS word frequencies before
+                                uploading any data. </strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-sm-6">
+                <img id="img1" class="face-pic" style="width:60%;display:block;" src="https://i.imgur.com/1V1SDjZ.png"/>
+                <img id="img2" class="face-pic" style="width:60%;display:none;" src="https://i.imgur.com/UkMme2Q.png"/>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- End hero -->
+
+
+<!-- JavaScripts -->
+<script src="http://www.ianvillaceran.com/wrapbootstrap/demo/cosmos/cosmos-v11/v11/js/jquery-1.10.2.js"></script>
+
+<script>
+    $(document).ready(function(){
+        setInterval(function(){
+            $(".face-pic").toggle();
+        },40000);
+    });
+</script>
+
+</body>
+</html>
