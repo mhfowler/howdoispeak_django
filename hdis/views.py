@@ -3,6 +3,7 @@ from django import shortcuts
 import json
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from hdis.models import HowDoISpeakUser
 
 
 def redirect(request, page='/home'):
@@ -25,6 +26,7 @@ def home(request):
     return  html_response(request=request, template="landing.html")
 
 def user_page(request, user_pin):
+    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     return  html_response(request=request, template="user_page.html", data_dict={"user_pin":user_pin})
 
 

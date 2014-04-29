@@ -17,7 +17,7 @@ class XManager(models.Manager):
 # All models inherit from this
 #-----------------------------------------------------------------------------------------------------------------------
 class XModel(models.Model):
-    lg = XManager()
+    x = XManager()
     objects = models.Manager()
     class Meta:
         abstract = True
