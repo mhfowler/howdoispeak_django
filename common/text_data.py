@@ -3,7 +3,29 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 
 import os, json
-from common.common import PROJECT_PATH, SECRETS, getS3Credentials
+from settings.common import PROJECT_PATH, SECRETS_DICT, getS3Credentials
+
+def makeTimeKeyFromTimeTuple(time_tuple):
+    time_key = ""
+    for index,e in enumerate(time_tuple):
+        if index != (len(time_tuple)-1):
+            time_key += e + "|"
+        else:
+            time_key += e
+    return time_key
+
+def getTimeTupleFromTimeString(time_string, resolution="hour"):
+    if not isinstance(time_string, basestring):
+        return time_string
+    hour,day,month,year = time_string.split("|")
+    if resolution == "hour":
+        return hour,day,month,year
+    elif resolution == "day":
+        return day,month,year
+    elif resolution == "month":
+        return month,year
+    elif resolution == "year":
+        return year
 
 class TextData():
 
@@ -13,22 +35,14 @@ class TextData():
         self.counts_dict = {}
         self.filtered_counts_dict = None
         self.by_time = None
+        self.days_saved = None
         self.users_data = []
         self.usernames = set([])
         self.num_unknown = 0
         self.aws_access_key_id, self.aws_secret_access_key = getS3Credentials()
 
-
-    def getTimeTupleFromTimeString(self, time_string, resolution="hour"):
-        hour,day,month,year = time_string.split("|")
-        if resolution == "hour":
-            return hour,day,month,year
-        elif resolution == "day":
-            return day,month,year
-        elif resolution == "month":
-            return month,year
-        elif resolution == "year":
-            return year
+    def getUsernames(self):
+        return list(self.usernames)
 
     def getUnknownID(self):
         self.num_unknown += 1
@@ -61,7 +75,7 @@ class TextData():
         for conversation_tuple,conversation_dict in counts_dict.items():
             filtered_conversation_dict = {}
             for time_key,time_dict in conversation_dict.items():
-                hour,day,month,year = self.getTimeTupleFromTimeString(time_key)
+                hour,day,month,year = getTimeTupleFromTimeString(time_key)
                 text_time = datetime.datetime(year=year, month=month, day=day, hour=hour)
                 if start_time and end_time:
                     if text_time > start_time and text_time < end_time:
@@ -143,10 +157,13 @@ class TextData():
     # resolution is what interval to group times by
     def calcByTime(self,resolution="hour"):
         by_time = self.by_time = {}
+        days_saved = self.days_saved = set([]) # days on which a text was sent
         counts_dict = self.getCountsDict()
         for conversation_tuple,conversation_dict in counts_dict.items():
             for time_key,time_dict in conversation_dict.items():
-                time_tuple = self.getTimeTupleFromTimeString(time_key, resolution)
+                day_tuple = getTimeTupleFromTimeString(time_key, "day")
+                days_saved.add(day_tuple)
+                time_tuple = getTimeTupleFromTimeString(time_key, resolution)
                 relevant_dict = by_time.setdefault(time_tuple,{"1":{},"text_blob":"","num_texts":0})
                 relevant_counts_dict = relevant_dict.get("1")
                 relevant_text_blob = relevant_dict.get("text_blob")
@@ -161,6 +178,9 @@ class TextData():
 
     def getByTime(self):
         return self.by_time
+
+    def getDaysSaved(self):
+        return self.days_saved
 
     def getByTimeDictsInOrder(self):
         return self.returnOrderedTimeDict(self.by_time)
@@ -186,8 +206,7 @@ class TextData():
             counts["to"] = time_dict["num_texts"]
         return text_counts
 
-    def returnOrderedTimeDict(self, time_dict):
-        def compareTimeTuples(tuple_a,tuple_b):
+    def compareTimeTuples(self, tuple_a,tuple_b):
             len_a = len(tuple_a)
             len_b = len(tuple_b)
             if len_a != len_b: print "wtf"
@@ -199,8 +218,10 @@ class TextData():
                 elif a > b:
                     return 1
             return 0
+
+    def returnOrderedTimeDict(self, time_dict):
         time_keys = time_dict.keys()
-        time_keys.sort(cmp=compareTimeTuples)
+        time_keys.sort(cmp=self.compareTimeTuples)
         to_return = []
         for time_key in time_keys:
             t_dict = time_dict[time_key]

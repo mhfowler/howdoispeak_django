@@ -33,3 +33,15 @@ class HowDoISpeakUser(XModel):
     processed = models.BooleanField(default=False)
     created_when = models.DateTimeField(auto_now_add=True, blank=True)
     user_pin = models.CharField(max_length=100)
+
+    def getS3Folder(self):
+        return "users/" + str(self.user_pin) + "/"
+
+    def getRawKeyName(self):
+        return self.getS3Folder() + "raw.json"
+
+    def getFreqKeyName(self):
+        return self.getS3Folder() + "freq.json"
+
+    def getGroupsTrackerKeyName(self):
+        return self.getS3Folder() + "groups.json"

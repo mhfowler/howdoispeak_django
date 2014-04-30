@@ -1,6 +1,7 @@
 # Django settings
 import os
 import json
+from boto.s3.connection import S3Connection
 PROJECT_PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 # read secrets from json
@@ -15,6 +16,15 @@ def getS3Credentials():
     aws_access_key_id = SECRETS_DICT["AWS_ACCESS_KEY_ID"]
     aws_secret_access_key = SECRETS_DICT["AWS_SECRET_ACCESS_KEY"]
     return aws_access_key_id, aws_secret_access_key
+
+def getS3Connection():
+    aws_access_key_id, aws_secret_access_key = getS3Credentials()
+    conn = S3Connection(aws_access_key_id, aws_secret_access_key)
+    return conn
+
+def getHDISBucket():
+    conn = getS3Connection()
+    return conn.get_bucket("howdoispeak")
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
