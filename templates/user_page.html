@@ -9,24 +9,33 @@
 
     <title>HowDoISpeak?</title>
 
+        <!-- jquery -->
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1-rc1/jquery.min.js"></script>
+    {% load staticfiles %}
+    <script src="{% static "max.js" %}"></script>
+    <script src="{% static "mohsan.js" %}"></script>
+    <script src="{% static "naveed.js" %}"></script>
+
 </head>
 <body>
 
-<p>
+<p id="user_pin" data-user_pin="{{ user_pin }}">
     {{ user_pin }}
 </p>
 
-<p>
+<div>
     {% include "max.html" %}
-</p>
+</div>
 
-<p>
+<div>
     {% include "naveed.html" %}
-</p>
+</div>
 
-<p>
+<div>
     {% include "mohsan.html" %}
-</p>
+</div>
+
+
 
 </body>
 </html>
