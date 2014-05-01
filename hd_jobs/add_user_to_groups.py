@@ -14,11 +14,11 @@ def addUserToGroups(user_pin):
     groups_tracker_key_name = hdis_user.getGroupsTrackerKeyName()
     groups_tracker_key = bucket.get_key(groups_tracker_key_name)
     if groups_tracker_key:
-        group_json = group_key.get_contents_as_string()
+        groups_json = group_key.get_contents_as_string()
     else:
         groups_tracker_key = Key(bucket)
-        group_tracker_key.key = groups_tracker_key_name
-        group_json = json.dumps([])
+        groups_tracker_key.key = groups_tracker_key_name
+        groups_json = json.dumps([])
     groups_tracker_list = json.loads(groups_json)
 
     group_names = getGroupKeys(hdis_user)
@@ -49,6 +49,8 @@ def addUserToGroup(hdis_user, group_folder):
     group_meta = group_dict.get("group_meta")
     group_counts = group_dict.setdefault("counts", {})     # dictionary mapping (hour,day,month,year) to word counts
     group_num_users = group_dict.setdefault("num_users",{}) # dictionary mapping (day,month,year) to number of users who have data from that day
+    processed_users = group_meta.setdefault("processed_users",[])
+    processed_users.append(hdis_user.user_pin)
     user_key_name = hdis_user.getRawKeyName()
     user_key = bucket.get_key(user_key_name)
     user_td = TextData()
