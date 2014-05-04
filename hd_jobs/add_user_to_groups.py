@@ -22,6 +22,8 @@ def addUserToGroups(user_pin):
 
 
 def addUserToGroup(hdis_user, group_folder):
+    user_pin = hdis_user.user_pin
+    print "adding to group " + "[" + str(group_folder) + "]: " + str(user_pin)
     bucket = getHDISBucket()
     group_key_name = group_folder + "raw.json"
     group_key, group_dict = getOrCreateS3Key(group_key_name)
@@ -29,7 +31,9 @@ def addUserToGroup(hdis_user, group_folder):
     group_counts = group_dict.setdefault("counts", {})     # dictionary mapping (hour,day,month,year) to word counts
     group_num_users = group_dict.setdefault("num_users",{}) # dictionary mapping (day,month,year) to number of users who have data from that day
     processed_users = group_meta.setdefault("processed_users",[])
-    processed_users.append(hdis_user.user_pin)
+    if user_pin in processed_users:
+        return False
+    processed_users.append(user_pin)
     user_key_name = hdis_user.getRawKeyName()
     user_key = bucket.get_key(user_key_name)
     user_td = TextData()

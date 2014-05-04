@@ -34,7 +34,7 @@ def getOrCreateS3Key(key_name):
     except:
         key = Key(bucket)
         key.key = key_name
-        key_json = json.dumps([])
+        key_json = json.dumps({})
     try:
         key_dict = json.loads(key_json)
     except:

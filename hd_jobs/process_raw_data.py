@@ -101,7 +101,7 @@ def calcByTime(user_pin):
     print "by_time: " + str(user_pin)
     bucket = getHDISBucket()
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
-
+    # TODO: haven't written this yet
 
 
 # check which jobs have been performed on a particular user_pin, by looking at which output files exist in that users folder
@@ -118,7 +118,7 @@ def whichJobsCompleted(user_pin):
     return jobs_completed
 
 
-ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json","groups.json"] # all jobs to be done in order
+ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json"] # all jobs to be done in order
 def processUserPin(user_pin, force=False):
     print "processing: " + str(user_pin)
     jobs_completed = whichJobsCompleted(user_pin)
@@ -129,9 +129,10 @@ def processUserPin(user_pin, force=False):
                 "freq.json":calcUserFreqs,
                 "most_used.json":calcMostUsed,
                 "abnormal.json":calcMostAbnormal,
-                "groups.json":addUserToGroups
             }
             job_function_map[job](user_pin)
+    # add user to groups is based on which groups are in tracker
+    addUserToGroups(user_pin)
 
 
 # job handling and management
