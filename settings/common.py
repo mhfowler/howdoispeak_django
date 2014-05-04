@@ -1,7 +1,7 @@
 # Django settings
 import os
 import json
-from boto.s3.connection import S3Connection
+from boto.s3.connection import S3Connection, Key
 PROJECT_PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 # read secrets from json
@@ -25,6 +25,21 @@ def getS3Connection():
 def getHDISBucket():
     conn = getS3Connection()
     return conn.get_bucket("howdoispeak")
+
+def getOrCreateS3Key(key_name):
+    bucket = getHDISBucket()
+    try:
+        key = bucket.get_key(key_name)
+        key_json = key.get_contents_as_string()
+    except:
+        key = Key(bucket)
+        key.key = key_name
+        key_json = json.dumps([])
+    try:
+        key_dict = json.loads(key_json)
+    except:
+        key_dict = {}
+    return key, key_dict
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

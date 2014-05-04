@@ -1,5 +1,5 @@
 from hd_jobs.move_raw_data import moveRawData
-from hd_jobs.add_user_to_groups import addUserToGroups
+from hd_jobs.add_user_to_groups import addUserToGroups, clearGroup
 from hd_jobs.calculate_word_freq import calcFreqDicts, calcGroupFreqDicts, calcUserFreqDicts
 from settings.common import getHDISBucket
 import re, json
@@ -190,8 +190,10 @@ def registerAllRawData():
     for s3_key in keys_list:
         registerRawData(s3_key)
 
+
 def mainFun():
     registerAllRawData()
+    clearGroup("groups/all/")
     processAllUsers()
     recalcGroupFreqs()
     recalcMostAbnormal()

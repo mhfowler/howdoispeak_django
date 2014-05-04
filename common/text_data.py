@@ -27,6 +27,7 @@ def getTimeTupleFromTimeString(time_string, resolution="hour"):
     elif resolution == "year":
         return year
 
+
 class TextData():
 
     def __init__(self):

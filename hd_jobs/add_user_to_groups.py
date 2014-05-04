@@ -1,10 +1,10 @@
 # takes in a user_pin, and adds user count data to all aggregate counts for every group to which that user belongs
 # (for initial version, the only group is the group of all users)
 from hdis.models import HowDoISpeakUser
-from settings.common import getHDISBucket
+from settings.common import getHDISBucket, getOrCreateS3Key
 from common.text_data import TextData, makeTimeKeyFromTimeTuple, getTimeTupleFromTimeString
 from boto.s3.key import Key
-import json
+import json, re
 
 def addUserToGroups(user_pin):
     print "grouping: " + str(user_pin)
@@ -12,16 +12,9 @@ def addUserToGroups(user_pin):
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     # keep track of which groups user is in
     groups_tracker_key_name = hdis_user.getGroupsTrackerKeyName()
-    groups_tracker_key = bucket.get_key(groups_tracker_key_name)
-    if groups_tracker_key:
-        groups_json = group_key.get_contents_as_string()
-    else:
-        groups_tracker_key = Key(bucket)
-        groups_tracker_key.key = groups_tracker_key_name
-        groups_json = json.dumps([])
-    groups_tracker_list = json.loads(groups_json)
+    groups_tracker_key, groups_tracker_list = getOrCreateS3Key(groups_tracker_key_name)
 
-    group_names = getGroupKeys(hdis_user)
+    group_names = getUserGroups(hdis_user)
     for group_name in group_names:
         addUserToGroup(hdis_user, group_name)
         groups_tracker_list.append(group_name)
@@ -31,22 +24,8 @@ def addUserToGroups(user_pin):
 def addUserToGroup(hdis_user, group_folder):
     bucket = getHDISBucket()
     group_key_name = group_folder + "raw.json"
-    group_key = bucket.get_key(group_key_name)
-    try:
-        group_json = group_key.get_contents_as_string()
-    except:
-        group_key = Key(bucket)
-        group_key.key = group_key_name
-    try:
-        group_dict = json.loads(group_json)
-    except:
-        group_dict = {
-            "group_meta":
-                {
-                    "group_name":group_folder
-                }
-        }
-    group_meta = group_dict.get("group_meta")
+    group_key, group_dict = getOrCreateS3Key(group_key_name)
+    group_meta = group_dict.setdefault("group_meta", {"group_name":group_folder})
     group_counts = group_dict.setdefault("counts", {})     # dictionary mapping (hour,day,month,year) to word counts
     group_num_users = group_dict.setdefault("num_users",{}) # dictionary mapping (day,month,year) to number of users who have data from that day
     processed_users = group_meta.setdefault("processed_users",[])
@@ -84,11 +63,36 @@ def addUserToGroup(hdis_user, group_folder):
     group_key.set_contents_from_string(updated_group_json)
 
 
-def getGroupKeys(hdis_user):
+def getUserGroups(hdis_user):
     bucket = getHDISBucket()
     group_key_name = "groups/all/"
     return [group_key_name]
 
 
+def getGroupKeys(group_folder):
+    bucket = getHDISBucket()
+    keys = bucket.list()
+    to_return = []
+    for key in keys:
+        name = key.name
+        result = re.match(group_folder + ".*", name)
+        if result:
+            to_return.append(key)
+    return to_return
+
+
+def clearGroup(group_folder_name):
+    bucket = getHDISBucket()
+    group_keys = getGroupKeys(group_folder_name)
+    bucket.delete_keys(group_keys)
+    # for all users set that they are not included in group anymore
+    users = HowDoISpeakUser.objects.all()
+    for u in users:
+        groups_tracker_key_name = u.getGroupsTrackerKeyName()
+        groups_tracker_key, groups_tracker_list = getOrCreateS3Key(groups_tracker_key_name)
+        updated_groups_tracker_list = [x for x in groups_tracker_list if x != group_folder_name]
+        groups_tracker_key.set_contents_from_string(json.dumps(updated_groups_tracker_list))
+
+
 if __name__ == "__main__":
-    addUserToGroup("6996200796") # add max to group
+    clearGroup("groups/all/")

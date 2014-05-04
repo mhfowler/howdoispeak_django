@@ -45,3 +45,13 @@ class HowDoISpeakUser(XModel):
 
     def getGroupsTrackerKeyName(self):
         return self.getS3Folder() + "groups.json"
+
+    def getGroupsTrackerKey(self):
+        groups_tracker_key_name = self.getGroupsTrackerKeyName()
+        groups_tracker_key = bucket.get_key(groups_tracker_key_name)
+        if groups_tracker_key:
+            return groups_tracker_key
+        else:
+            groups_tracker_key = Key(bucket)
+            groups_tracker_key.key = groups_tracker_key_name
+            return groups
