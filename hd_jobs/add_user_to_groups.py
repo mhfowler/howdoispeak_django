@@ -23,8 +23,6 @@ def addUserToGroups(user_pin):
 
 def addUserToGroup(hdis_user, group_folder):
     user_pin = hdis_user.user_pin
-    print "adding to group " + "[" + str(group_folder) + "]: " + str(user_pin)
-    bucket = getHDISBucket()
     group_key_name = group_folder + "raw.json"
     group_key, group_dict = getOrCreateS3Key(group_key_name)
     group_meta = group_dict.setdefault("group_meta", {"group_name":group_folder})
@@ -33,8 +31,9 @@ def addUserToGroup(hdis_user, group_folder):
     processed_users = group_meta.setdefault("processed_users",[])
     if user_pin in processed_users:
         return False
-    processed_users.append(user_pin)
+    processed_users.append(hdis_user.user_pin)
     user_key_name = hdis_user.getRawKeyName()
+    bucket = getHDISBucket()
     user_key = bucket.get_key(user_key_name)
     user_td = TextData()
     user_td.loadFromS3Keys([user_key])
