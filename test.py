@@ -6,10 +6,6 @@ if __name__ == "__main__":
     # addUserToGroup("6996200796") # add max to group
     # enqueuAll()
     # recalcGroupFreqs()
-    # mainFun()
-    # clearGroup("groups/all/")
+    mainFun()
     # recalcGroupFreqs()
     # recalcMostAbnormal()
-    users = HowDoISpeakUser.objects.all()
-    for u in users:
-        calcByTime(u.user_pin)

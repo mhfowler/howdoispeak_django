@@ -1,4 +1,6 @@
 from django.db import models
+from settings.common import getHDISBucket
+from boto.s3.connection import Key
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Useful manager for all models.
@@ -52,12 +54,17 @@ class HowDoISpeakUser(XModel):
     def getGroupsTrackerKeyName(self):
         return self.getS3Folder() + "groups.json"
 
+    def getSentimentByPersonKeyName(self):
+        return self.getS3Folder() + "sentiment_by_person.txt"
+
+    def getSentimentByHourName(self):
+        return self.getS3Folder() + "sentiment_by_hour.txt"
+
     def getGroupsTrackerKey(self):
         groups_tracker_key_name = self.getGroupsTrackerKeyName()
+        bucket = getHDISBucket()
         groups_tracker_key = bucket.get_key(groups_tracker_key_name)
-        if groups_tracker_key:
-            return groups_tracker_key
-        else:
+        if not groups_tracker_key:
             groups_tracker_key = Key(bucket)
             groups_tracker_key.key = groups_tracker_key_name
-            return groups
+        return groups_tracker_key

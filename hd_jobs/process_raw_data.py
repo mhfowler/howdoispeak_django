@@ -1,12 +1,12 @@
 from hd_jobs.move_raw_data import moveRawData
 from hd_jobs.add_user_to_groups import addUserToGroups, clearGroup
 from hd_jobs.calculate_word_freq import calcFreqDicts, calcGroupFreqDicts, calcUserFreqDicts
-from settings.common import getHDISBucket, getOrCreateS3Key
-import re, json
+from hd_jobs.sentiment import calcSentimentByPersonFromRawJSON, calcSentimentByHourFromRawJSON
+from settings.common import getHDISBucket, getOrCreateS3Key, SECRETS_DICT, PROJECT_PATH
+import re, json, os
 from hdis.models import HowDoISpeakUser
 from boto.s3.key import Key
 from common.text_data import TextData
-
 
 
 # =====================================================================================================================
@@ -127,6 +127,24 @@ def calcCategories(user_pin):
     categories_key, categories_dict = getOrCreateS3Key(categories_key_name)
     categories_key.set_contents_from_string(json.dumps(to_write))
 
+def calcSentiment(user_pin):
+    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
+    raw_key_name = hdis_user.getRawKeyName()
+    raw_key, raw_key_dict = getOrCreateS3Key(raw_key_name)
+    raw_key_json = raw_key.get_contents_as_string()
+    sent_file_path = os.path.join(PROJECT_PATH, "/static/AFINN-111.txt")
+    sent_file = open(sent_file_path, "r")
+    sentiment_by_hour = calcSentimentByHourFromRawJSON(raw_key_json, sent_file)
+    sentiment_by_person = calcSentimentByPersonFromRawJSON(raw_key_json, sent_file)
+    sentiment_by_person_key_name = hdis_user.getSentinmentByPersonKeyName()
+    sentiment_by_hour_key_name = hdis_user.getSentimentByHourKeyName()
+    bucket = getHDISBucket()
+    sentiment_by_hour_key = Key(bucket)
+    sentiment_by_hour_key.key = sentiment_by_hour_key_name
+    sentiment_by_hour_key.set_contents_from_string(sentiment_by_hour)
+    sentiment_by_person_key = Key(bucket)
+    sentiment_by_person_key.key = sentiment_by_person_key_name
+    sentiment_by_person_key.set_contents_from_string(sentiment_by_person)
 
 # check which jobs have been performed on a particular user_pin, by looking at which output files exist in that users folder
 def whichJobsCompleted(user_pin):
@@ -142,7 +160,7 @@ def whichJobsCompleted(user_pin):
     return jobs_completed
 
 
-ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json","categories.json"] # all jobs to be done in order
+ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json","categories.json","sentiment_by_person.txt"] # all jobs to be done in order
 def processUserPin(user_pin, force=False):
     print "processing: " + str(user_pin)
     jobs_completed = whichJobsCompleted(user_pin)
@@ -153,7 +171,8 @@ def processUserPin(user_pin, force=False):
                 "freq.json":calcUserFreqs,
                 "most_used.json":calcMostUsed,
                 "abnormal.json":calcMostAbnormal,
-                "categories.json":calcCategories
+                "categories.json":calcCategories,
+                "sentiment_by_person.txt":calcSentiment,
             }
             job_function_map[job](user_pin)
     # add user to groups is based on which groups are in tracker

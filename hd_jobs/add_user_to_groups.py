@@ -68,18 +68,27 @@ def addUserToGroup(hdis_user, group_folder):
             group_word_counts[word] = prev_count + count
             user_vocab.add(word)
 
-        # group vocab
-        group_vocab = group_dict.setdefault("vocab", {"1":[],"2":[],"3":[]})
-        one_thresh = group_vocab["1"]
-        two_thresh = group_vocab["2"]
-        three_thresh = group_vocab["3"]
-        for word in list(user_vocab):
-            if word not in one_thresh:
-                one_thresh.append(word)
-            elif word not in two_thresh:
-                two_thresh.append(word)
-            elif word not in three_thresh:
-                three_thresh.append(word)
+    # group vocab
+    group_vocab = group_dict.setdefault("vocab", {"1":[],"2":[],"3":[]})
+    one_thresh = group_vocab["1"]
+    one_thresh_set = set(one_thresh)
+    two_thresh = group_vocab["2"]
+    two_thresh_set = set(two_thresh)
+    three_thresh = group_vocab["3"]
+    three_thresh_set = set(three_thresh)
+    user_vocab = list(user_vocab)
+    for word in user_vocab:
+        if word in two_thresh_set:
+            three_thresh_set.add(word)
+        elif word in one_thresh_set:
+            two_thresh_set.add(word)
+        else:
+            one_thresh_set.add(word)
+    group_vocab["1"] = list(one_thresh_set)
+    group_vocab["2"] = list(two_thresh_set)
+    group_vocab["3"] = list(three_thresh_set)
+
+
 
     # write json of group back to the key where it came from
     updated_group_json = json.dumps(group_dict)
