@@ -27,9 +27,14 @@ def addUserToGroup(hdis_user, group_folder):
     group_key, group_dict = getOrCreateS3Key(group_key_name)
     group_meta = group_dict.setdefault("group_meta", {"group_name":group_folder})
     group_counts = group_dict.setdefault("counts", {})     # dictionary mapping (hour,day,month,year) to word counts
+
+
+
+    # processed users
     group_num_users = group_dict.setdefault("num_users",{}) # dictionary mapping (day,month,year) to number of users who have data from that day
     processed_users = group_meta.setdefault("processed_users",[])
     if user_pin in processed_users:
+        print "skipped ... " + group_folder
         return False
     processed_users.append(hdis_user.user_pin)
     user_key_name = hdis_user.getRawKeyName()
@@ -46,6 +51,7 @@ def addUserToGroup(hdis_user, group_folder):
         num_users_prev = group_num_users.setdefault(day_string, 0)
         group_num_users[day_string] = num_users_prev + 1
     # increment word counts
+    user_vocab = set([])
     for time_tuple, user_data in user_by_time.items():
         time_key = makeTimeKeyFromTimeTuple(time_tuple)
         user_word_counts = user_data["1"]
@@ -60,9 +66,23 @@ def addUserToGroup(hdis_user, group_folder):
         for word,count in user_word_counts.items():
             prev_count = group_word_counts.setdefault(word, 0)
             group_word_counts[word] = prev_count + count
+            user_vocab.add(word)
+
+        # group vocab
+        group_vocab = group_dict.setdefault("vocab", {"1":[],"2":[],"3":[]})
+        one_thresh = group_vocab["1"]
+        two_thresh = group_vocab["2"]
+        three_thresh = group_vocab["3"]
+        for word in list(user_vocab):
+            if word not in one_thresh:
+                one_thresh.append(word)
+            elif word not in two_thresh:
+                two_thresh.append(word)
+            elif word not in three_thresh:
+                three_thresh.append(word)
+
     # write json of group back to the key where it came from
     updated_group_json = json.dumps(group_dict)
-
     group_key.set_contents_from_string(updated_group_json)
 
 

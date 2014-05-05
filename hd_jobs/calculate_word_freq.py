@@ -39,7 +39,6 @@ def calcFreqDicts(data_counts, resolution="month"):
     all_freqs_dicts = {}
     for time_tuple, text_blob in resolution_dict.items():
         time_key = makeTimeKeyFromTimeTuple(time_tuple)
-        print "freq calculation: " + time_key
         freq_dict = getFreqDictFromText(text_blob)
         all_freqs_dicts[time_key] = freq_dict
     # calculate total word frequencies over all time
