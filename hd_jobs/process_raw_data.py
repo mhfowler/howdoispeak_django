@@ -220,7 +220,7 @@ def registerAllRawData():
 def mainFun():
     recalcGroupFreqs()
     registerAllRawData()
-    # clearGroup("groups/all/")
+    clearGroup("groups/all/")
     processAllUsers()
     recalcGroupFreqs()
     recalcMostAbnormal()
