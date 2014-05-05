@@ -71,15 +71,15 @@ def calcMostAbnormal(user_pin):
     print "abnormal: " + str(user_pin)
     bucket = getHDISBucket()
     group_freq_key_name = "groups/all/freq.json"
-    group_freq_key = bucket.get_key(group_freq_key_name)
-    group_freq_json = group_freq_key.get_contents_as_string()
-    group_freq_dict = json.loads(group_freq_json)
-    group_total_freqs = group_freq_dict["total_freq"]
+    group_freq_key, group_freq_dict = getOrCreateS3Key(group_freq_key_name)
+    try:
+        group_total_freqs = group_freq_dict["total_freq"]
+    except:
+        print "+EE+: can't calculate most abnormal before group freq."
+        return
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     user_freq_key_name = hdis_user.getFreqKeyName()
-    user_freq_key = bucket.get_key(user_freq_key_name)
-    user_freq_json = user_freq_key.get_contents_as_string()
-    user_freq_dict = json.loads(user_freq_json)
+    user_freq_key, user_freq_dict = getOrCreateS3Key(user_freq_key_name)
     user_total_freqs = user_freq_dict["total_freq"]
     user_total_freqs_list = user_total_freqs.items()
     def sort_fun(x):
@@ -220,7 +220,7 @@ def registerAllRawData():
 def mainFun():
     recalcGroupFreqs()
     registerAllRawData()
-    clearGroup("groups/all/")
+    # clearGroup("groups/all/")
     processAllUsers()
     recalcGroupFreqs()
     recalcMostAbnormal()
