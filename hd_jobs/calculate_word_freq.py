@@ -6,8 +6,11 @@ from common.text_data import TextData, makeTimeKeyFromTimeTuple, getTimeTupleFro
 import sys, nltk, json, re
 
 def calcGroupFreqDicts(raw_key, resolution):
-    data_json = raw_key.get_contents_as_string()
-    data_dict = json.loads(data_json)
+    try:
+        data_json = raw_key.get_contents_as_string()
+        data_dict = json.loads(data_json)
+    except:
+        data_dict = {}
     data_counts = data_dict.setdefault("counts", {})     # dictionary mapping (hour,day,month,year) to word counts
     return calcFreqDicts(data_counts)
 

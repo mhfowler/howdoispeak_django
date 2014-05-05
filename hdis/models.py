@@ -43,6 +43,12 @@ class HowDoISpeakUser(XModel):
     def getFreqKeyName(self):
         return self.getS3Folder() + "freq.json"
 
+    def getByTimeKeyName(self):
+        return self.getS3Folder() + "by_time.json"
+
+    def getCategoriesKeyName(self):
+        return self.getS3Folder() + "categories.json"
+
     def getGroupsTrackerKeyName(self):
         return self.getS3Folder() + "groups.json"
 

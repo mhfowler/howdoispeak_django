@@ -116,7 +116,6 @@ class TextData():
 
     def loadFromS3Keys(self, s3_keys):
         for k in s3_keys:
-            print k.name
             json_string = k.get_contents_as_string()
             self.loadJSON(json_string)
 
@@ -179,6 +178,14 @@ class TextData():
 
     def getByTime(self):
         return self.by_time
+
+    def getJSONDumpableByTime(self):
+        by_time = self.getByTime()
+        to_return = {}
+        for time_tuple, time_dict in by_time.items():
+            time_key = makeTimeKeyFromTimeTuple(time_tuple)
+            to_return[time_key] = time_dict
+        return to_return
 
     def getDaysSaved(self):
         return self.days_saved

@@ -1,10 +1,11 @@
 from hd_jobs.move_raw_data import moveRawData
 from hd_jobs.add_user_to_groups import addUserToGroups, clearGroup
 from hd_jobs.calculate_word_freq import calcFreqDicts, calcGroupFreqDicts, calcUserFreqDicts
-from settings.common import getHDISBucket
+from settings.common import getHDISBucket, getOrCreateS3Key
 import re, json
 from hdis.models import HowDoISpeakUser
 from boto.s3.key import Key
+from common.text_data import TextData
 
 
 
@@ -99,9 +100,32 @@ def calcMostAbnormal(user_pin):
 
 def calcByTime(user_pin):
     print "by_time: " + str(user_pin)
-    bucket = getHDISBucket()
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
-    # TODO: haven't written this yet
+    user_key_name = hdis_user.getRawKeyName()
+    bucket = getHDISBucket()
+    user_key = bucket.get_key(user_key_name)
+    user_td = TextData()
+    user_td.loadFromS3Keys([user_key])
+    user_td.calcByTime()
+    user_by_time = user_td.getJSONDumpableByTime()
+    by_time_key_name = hdis_user.getByTimeKeyName()
+    by_time_key, by_time_key_dict = getOrCreateS3Key(by_time_key_name)
+    by_time_key.set_contents_from_string(json.dumps(user_by_time))
+
+
+def calcCategories(user_pin):
+    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
+    raw_key_name = hdis_user.getRawKeyName()
+    by_time_key_name = hdis_user.getByTimeKeyName()
+    raw_key, raw_key_dict = getOrCreateS3Key(raw_key_name)
+    by_time_key, by_time_key_dict = getOrCreateS3Key(by_time_key_name)
+    to_write = {}
+    # use raw__key_dict and by_time_key_dict to create an output
+    # TODO:
+    # output key
+    categories_key_name = hdis_user.getCategoriesKeyName()
+    categories_key, categories_dict = getOrCreateS3Key(categories_key_name)
+    categories_key.set_contents_from_string(json.dumps(to_write))
 
 
 # check which jobs have been performed on a particular user_pin, by looking at which output files exist in that users folder
@@ -118,7 +142,7 @@ def whichJobsCompleted(user_pin):
     return jobs_completed
 
 
-ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json"] # all jobs to be done in order
+ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json","categories.json"] # all jobs to be done in order
 def processUserPin(user_pin, force=False):
     print "processing: " + str(user_pin)
     jobs_completed = whichJobsCompleted(user_pin)
@@ -129,6 +153,7 @@ def processUserPin(user_pin, force=False):
                 "freq.json":calcUserFreqs,
                 "most_used.json":calcMostUsed,
                 "abnormal.json":calcMostAbnormal,
+                "categories.json":calcCategories
             }
             job_function_map[job](user_pin)
     # add user to groups is based on which groups are in tracker
@@ -193,6 +218,7 @@ def registerAllRawData():
 
 
 def mainFun():
+    recalcGroupFreqs()
     registerAllRawData()
     clearGroup("groups/all/")
     processAllUsers()
