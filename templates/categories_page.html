@@ -1,0 +1,27 @@
+{% extends "base_page.html" %}
+
+{% load staticfiles %}
+{% block javascript_block %}
+    <script src="{% static 'categories.js' %}"></script>
+{% endblock %}
+
+{% block body_block %}
+
+    <div class="avgdata" data-json="{{ avgdata }}"></div>
+    <div class="persondata" data-json="{{ persondata }}"></div>
+
+	<div id="avgPie">
+		<h2>Your average category distribution:</h2>
+	</div>
+	<div id="perPerson">
+		<h2>Category distribution by person</h2>
+		<select id="options">
+			<option>----------</option>
+		</select>
+		<h3 id="person"></h3>
+		<div id="perPersonPie">
+		</div>
+	</div>
+
+{% endblock %}
+

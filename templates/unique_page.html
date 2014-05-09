@@ -1,40 +1,18 @@
+{% extends "base_page.html" %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+{% block body_block %}
 
-    <title>HowDoISpeak?</title>
+    <div>
+        Here is a list of words which no one in our dataset has ever texted (besides you). You are a unique flower.
+    </div>
 
-    <!-- jquery -->
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+    <div>
+        <ol>
+            {% for word in unique_words %}
+                <li>{{ word }}</li>
+            {% endfor %}
+        </ol>
+    </div>
 
-</head>
-
-<body>
-
-{% include "nav_header.html" %}
-
-<div>
-    Here is a list of words which no one in our dataset has ever texted (besides you). You are a unique flower.
-</div>
-
-<div>
-    <ol>
-        {% for word in unique_words %}
-            <li>{{ word }}</li>
-        {% endfor %}
-    </ol>
-</div>
-
-
-</body>
-</html>
-
-
-
-
+{% endblock %}
 

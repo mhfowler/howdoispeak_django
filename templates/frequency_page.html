@@ -1,22 +1,6 @@
+{% extends "base_page.html" %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-    <title>HowDoISpeak?</title>
-
-    <!-- jquery -->
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-    {% load staticfiles %}
-    <script src="{% static 'common.js' %}"></script>
-    <script src="{% static 'frequency.js' %}"></script>
-
+{% block style_block %}
     <style>
 
         body {
@@ -40,24 +24,25 @@
         }
 
     </style>
+{% endblock %}
 
-</head>
+{% load staticfiles %}
+{% block javascript_block %}
+    <script src="{% static 'frequency.js' %}"></script>
+{% endblock %}
 
-<body>
+{% block body_block %}
 
-{% include "nav_header.html" %}
+    <input type="text" class="the_word"/>
+    <input type="submit" class="word_freq_calculate" value="calculate"/>
+    <input type="submit" class="word_freq_clear" value="clear"/>
 
-<input type="text" class="the_word"/>
-<input type="submit" class="word_freq_calculate" value="calculate"/>
-<input type="submit" class="word_freq_clear" value="clear"/>
+    <p class="abnormal_output">
+        enter a word in the input and click calculate to see your frequency
+    </p>
 
-<p class="abnormal_output">
-    enter a word in the input and click calculate to see your frequency
-</p>
+{% endblock %}
 
-
-</body>
-</html>
 
 
 

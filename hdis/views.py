@@ -41,8 +41,15 @@ def sentiment_page(request, user_pin):
 
 @ensure_csrf_cookie
 def category_page(request, user_pin):
-    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
-    return  html_response(request=request, template="category_page.html", data_dict={"user_pin":user_pin})
+    user = HowDoISpeakUser.objects.get(user_pin=user_pin)
+    bucket = getHDISBucket()
+    categories_key_name = user.getCategoriesTotalKeyName()
+    categories_key = bucket.get_key(categories_key_name)
+    avgdata = categories_key.get_contents_as_string()
+    categories_by_person_key_name = user.getCategoriesByPersonKeyName()
+    categories_by_person_key = bucket.get_key(categories_by_person_key_name)
+    persondata = categories_by_person_key.get_contents_as_string()
+    return  html_response(request=request, template="categories_page.html", data_dict={"user_pin":user_pin,"persondata":persondata,"avgdata":avgdata})
 
 @ensure_csrf_cookie
 def frequency_page(request, user_pin):

@@ -4,6 +4,7 @@ from hd_jobs.move_raw_data import registerAllRawData
 from hd_jobs.process_group_data import recalcGroupData
 from hd_jobs.calculate_word_freq import calcUserFreqDicts
 from hd_jobs.sentiment import calcSentimentByPersonFromRawJSON, calcSentimentByHourFromRawJSON
+from hd_jobs.categories import category_analysis_by_person, complete_category_analysis
 
 # JOBS FOR USERS
 # ======================================================================================================================
@@ -110,22 +111,6 @@ def calcByTime(user_pin):
     by_time_key.set_contents_from_string(json.dumps(user_by_time))
 
 
-def calcCategories(user_pin):
-    print "categories: " + str(user_pin)
-    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
-    raw_key_name = hdis_user.getRawKeyName()
-    by_time_key_name = hdis_user.getByTimeKeyName()
-    raw_key, raw_key_dict = getOrCreateS3Key(raw_key_name)
-    by_time_key, by_time_key_dict = getOrCreateS3Key(by_time_key_name)
-    to_write = {}
-    # use raw__key_dict and by_time_key_dict to create an output
-    # TODO:
-    # output key
-    categories_key_name = hdis_user.getCategoriesKeyName()
-    categories_key, categories_dict = getOrCreateS3Key(categories_key_name)
-    categories_key.set_contents_from_string(json.dumps(to_write))
-
-
 def calcSentimentByPerson(user_pin):
     print "sentiment by person: " + str(user_pin)
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
@@ -139,7 +124,7 @@ def calcSentimentByPerson(user_pin):
     bucket = getHDISBucket()
     sentiment_by_person_key = Key(bucket)
     sentiment_by_person_key.key = sentiment_by_person_key_name
-    sentiment_by_person_key.set_contents_from_string(sentiment_by_person)
+    sentiment_by_person_key.set_contents_from_string(json.dumps(sentiment_by_person))
 
 
 def calcSentimentByHour(user_pin):
@@ -155,7 +140,35 @@ def calcSentimentByHour(user_pin):
     bucket = getHDISBucket()
     sentiment_by_hour_key = Key(bucket)
     sentiment_by_hour_key.key = sentiment_by_hour_key_name
-    sentiment_by_hour_key.set_contents_from_string(sentiment_by_hour)
+    sentiment_by_hour_key.set_contents_from_string(json.dumps(sentiment_by_hour))
+
+
+def calcCategoriesByPerson(user_pin):
+    print "categories by person: " + str(user_pin)
+    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
+    raw_key_name = hdis_user.getRawKeyName()
+    raw_key, raw_key_dict = getOrCreateS3Key(raw_key_name)
+    raw_key_json = raw_key.get_contents_as_string()
+    categories_by_person_output = category_analysis_by_person(raw_key_json)
+    bucket = getHDISBucket()
+    out_key_name = hdis_user.getCategoriesByPersonKeyName()
+    out_key = Key(bucket)
+    out_key.key = out_key_name
+    out_key.set_contents_from_string(json.dumps(categories_by_person_output))
+
+
+def calcCategoriesTotal(user_pin):
+    print "categories total: " + str(user_pin)
+    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
+    raw_key_name = hdis_user.getRawKeyName()
+    raw_key, raw_key_dict = getOrCreateS3Key(raw_key_name)
+    raw_key_json = raw_key.get_contents_as_string()
+    categories_output = complete_category_analysis(raw_key_json)
+    bucket = getHDISBucket()
+    out_key_name = hdis_user.getCategoriesTotalKeyName()
+    out_key = Key(bucket)
+    out_key.key = out_key_name
+    out_key.set_contents_from_string(json.dumps(categories_output))
 
 
 # FIGURE OUT WHICH JOBS TO RUN ON WHICH USERS (who have already been registered in database)
@@ -175,7 +188,9 @@ def whichJobsCompleted(user_pin):
     return jobs_completed
 
 
-ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json","categories.json","sentiment_by_person.txt","sentiment_by_hour.txt"] # all jobs to be done in order
+ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json",
+                 "abnormal.json","categories.json","categories_by_person.json","sentiment_by_person.txt",
+                 "sentiment_by_hour.txt",] # all jobs to be done in order
 def processUserPin(user_pin, force=False):
     print "processing: " + str(user_pin)
     jobs_completed = whichJobsCompleted(user_pin)
@@ -186,7 +201,8 @@ def processUserPin(user_pin, force=False):
                 "freq.json":calcUserFreqs,
                 "most_used.json":calcMostUsed,
                 "abnormal.json":calcMostAbnormal,
-                "categories.json":calcCategories,
+                "categories.json":calcCategoriesTotal,
+                "categories_by_person.json":calcCategoriesByPerson,
                 "sentiment_by_person.txt":calcSentimentByPerson,
                 "sentiment_by_hour.txt":calcSentimentByHour,
             }

@@ -48,6 +48,12 @@ class HowDoISpeakUser(XModel):
     def getAbnormalKeyName(self):
         return self.getS3Folder() + "abnormal.json"
 
+    def getCategoriesByPersonKeyName(self):
+        return self.getS3Folder() + "categories_by_person.json"
+
+    def getCategoriesTotalKeyName(self):
+        return self.getS3Folder() + "categories.json"
+
     def getByTimeKeyName(self):
         return self.getS3Folder() + "by_time.json"
 

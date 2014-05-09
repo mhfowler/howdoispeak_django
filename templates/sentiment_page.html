@@ -1,13 +1,11 @@
-<html>
-<head>
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-    {% load staticfiles %}
-    <script src="{% static 'common.js' %}"></script>
-    <script src="{% static 'sentiment.js' %}"></script>
+{% extends "base_page.html" %}
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% load staticfiles %}
+{% block javascript_block %}
+    <script src="{% static 'sentiment.js' %}"></script>
+{% endblock %}
+
+{% block style_block %}
     <style>
         rect.bordered {
             stroke: #E6E6E6;
@@ -83,77 +81,19 @@
             line-height: 30px;
         }
     </style>
+{% endblock %}
 
-    <title> Sentiment Analysis </title>
-</head>
+{% block body_block %}
+    <h1> Sentiment Analysis For Your Texts </h1>
 
-<body>
+    <div id="min_sent_by_person">
+        <h2> Top Conversation Sentiments: </h2>
+    </div>
 
-{% include "nav_header.html" %}
+    <div id="chart">
+        <h2> Sentiment By Time of Text: </h2>
 
-<h1> Sentiment Analysis For Your Texts </h1>
+    </div>
+    <br>
+{% endblock %}
 
-<div id="min_sent_by_person">
-    <h2> Top Conversation Sentiments: </h2>
-</div>
-
-<div id="chart">
-    <h2> Sentiment By Time of Text: </h2>
-
-</div>
-<br>
-<script type="text/javascript">
-    function getUserPin() {
-        var user_pin = $(".user_pin").data("user_pin");
-        return user_pin;
-    }
-    function getSentimentByPersonData() {
-        var u_pin = getUserPin();
-        $.ajax({
-            url: "/ajax/",
-            type: "POST",
-            data: {action: "getSentimentByPersonData", user_pin: u_pin}
-        }).done(byPersonDoneFunction);
-    }
-    function byPersonDoneFunction(data) {
-        var list = $(document.createElement('ul'));
-        list.attr("id", "myList")
-        $(data.split("\n")).each(function(i, entry) {
-            if (entry.length > 0) {
-                var listItem = $(document.createElement('li'));
-                listItem.text(i + 1 + ". " + entry);
-                list.append(listItem);
-
-                if (i >= 10)
-                    listItem.hide();
-            }
-        });
-        $("#min_sent_by_person").append(list);
-
-        $('#min_sent_by_person').append('<input type="button" id="showAll" value="Show All">');
-        $('#showAll').click(function(){
-
-            if ($("#showAll").attr("value") == "Show All") {
-                $("#showAll").attr("value", "Show Fewer");
-                $('#myList li').show();
-
-            }
-            else {
-                $("#showAll").attr("value", "Show All");
-                $('#myList li').hide();
-
-                $('#myList li:lt(10)').show();
-
-            }
-        });
-    }
-
-    // run it
-    getSentimentByPersonData();
-
-
-</script>
-
-
-</body>
-</html>

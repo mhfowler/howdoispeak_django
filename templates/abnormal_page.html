@@ -1,17 +1,6 @@
+{% extends 'base_page.html' %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-    <title>HowDoISpeak?</title>
-
-    <!-- jquery -->
-    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
-
+{% block style_block %}
     <style>
         li.often {
             color:green;
@@ -26,31 +15,25 @@
             width:400px;
         }
     </style>
+{% endblock %}
 
-</head>
+{% block body_block %}
 
-<body>
+    <div>
+        Here is a list of words you say with an abnormal frequency. The list goes from abnormally often at the top
+        to abnormally seldom at the bottom and only includes words which atleast two other people on howdoispeak
+        also said.
+    </div>
 
-{% include "nav_header.html" %}
+    <div>
+        <ol class="abnormal-list">
+            {% for word in abnormal_words %}
+                <li class="{% if word.often %}often{% else %}seldom{% endif %}">{{ word.word }} <span class="ratio-word">{{ word.ratio_word }}x</span></li>
+            {% endfor %}
+        </ol>
+    </div>
 
-<div>
-    Here is a list of words you say with an abnormal frequency. The list goes from abnormally often at the top
-    to abnormally seldom at the bottom and only includes words which atleast two other people on howdoispeak
-    also said.
-</div>
-
-<div>
-    <ol class="abnormal-list">
-        {% for word in abnormal_words %}
-            <li class="{% if word.often %}often{% else %}seldom{% endif %}">{{ word.word }} <span class="ratio-word">{{ word.ratio_word }}x</span></li>
-        {% endfor %}
-    </ol>
-</div>
-
-
-</body>
-</html>
-
+{% endblock %}
 
 
 
