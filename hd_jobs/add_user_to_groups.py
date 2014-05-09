@@ -12,9 +12,19 @@ def addUserToGroups(user_pin):
 
     group_names = getUserGroups(hdis_user)
     for group_name in group_names:
-        addUserToGroup(hdis_user, group_name)
-        groups_tracker_list.append(group_name)
+        if not group_name in groups_tracker_list:
+            print str(user_pin) + " - adding to - " + group_name
+            addUserToGroup(hdis_user, group_name)
+            groups_tracker_list.append(group_name)
     groups_tracker_key.set_contents_from_string(json.dumps(groups_tracker_list))
+
+
+def getGroupsUserIsIn(user_pin):
+    user = HowDoISpeakUser.objects.get(user_pin=user_pin)
+    groups_tracker_key_name = user.getGroupsTrackerKeyName()
+    groups_tracker_key, groups_tracker_list = getOrCreateS3Key(groups_tracker_key_name)
+    for group in groups_tracker_list:
+        print group
 
 
 def addUserToGroup(hdis_user, group_folder):
@@ -107,6 +117,7 @@ def getGroupKeys(group_folder):
 
 
 def clearGroup(group_folder_name):
+    print "clearing: " + group_folder_name
     bucket = getHDISBucket()
     group_keys = getGroupKeys(group_folder_name)
     bucket.delete_keys(group_keys)

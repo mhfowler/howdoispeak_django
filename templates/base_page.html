@@ -18,6 +18,49 @@
     {% block javascript_block %}
     {% endblock %}
 
+    <style>
+        body {
+            padding-left:20px;
+            padding-top:20px;
+            font-size:16px;
+        }
+        a {
+            font-size:16px;
+        }
+        .nav-links a {
+            margin-right:15px;
+            margin-bottom:20px;
+        }
+
+        .control-panel {
+            margin-top:15px;
+        }
+        .control-panel input {
+            margin-right:15px;
+            height:30px;
+            font-size:16px;
+        }
+
+        .control-description {
+            margin-top:15px;
+            font-size:16px;
+        }
+
+        .page-description {
+            font-size:16px;
+            margin-top:15px;
+        }
+        .words-list {
+            font-size:16px;
+            margin-top:20px;
+            padding-bottom:20px;
+        }
+
+        .main-container {
+            max-width:1000px;
+        }
+    </style>
+
     {% block style_block %}
 
     {% endblock %}
@@ -26,10 +69,11 @@
 
 <body>
 
-{% include "nav_header.html" %}
-
-{% block body_block %}
-    <p> page main! </p>
-{% endblock %}
+<div class="main-container container">
+    {% include "nav_header.html" %}
+    {% block body_block %}
+        <p> page main! </p>
+    {% endblock %}
+</div>
 
 </body>

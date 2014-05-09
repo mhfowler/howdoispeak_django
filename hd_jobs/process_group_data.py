@@ -15,6 +15,7 @@ def calcGroupFreqs():
     bucket = getHDISBucket()
     group_folders = getS3GroupFolders()
     for group_folder in group_folders:
+        print "group freq: " + str(group_folder)
         group_key_name = group_folder + "raw.json"
         group_key, group_key_dict = getOrCreateS3Key(group_key_name)
         total_freq,month_freqs,day_freqs = calcGroupFreqDicts(group_key, "month")
@@ -39,11 +40,11 @@ def recalcMostAbnormal():
 def getS3GroupFolders():
     bucket = getHDISBucket()
     keys = bucket.list()
-    group_folders = []
+    group_folders = set([])
     for key in keys:
         name = key.name
-        result = re.match("groups/.+", name)
+        result = re.match("groups/(.+)/.*", name)
         if result:
-            folder_name = result.group(0)
-            group_folders.append(folder_name)
+            folder_name = "groups/" + result.group(1) + "/"
+            group_folders.add(folder_name)
     return group_folders

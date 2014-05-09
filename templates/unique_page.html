@@ -2,12 +2,12 @@
 
 {% block body_block %}
 
-    <div>
+    <div class="page-description">
         Here is a list of words which no one in our dataset has ever texted (besides you). You are a unique flower.
     </div>
 
     <div>
-        <ol>
+        <ol class="words-list">
             {% for word in unique_words %}
                 <li>{{ word }}</li>
             {% endfor %}

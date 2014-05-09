@@ -10,7 +10,7 @@ from hd_jobs.categories import category_analysis_by_person, complete_category_an
 # ======================================================================================================================
 
 def calcUserFreqs(user_pin):
-    print ""
+    print "frequency: " + str(user_pin)
     bucket = getHDISBucket()
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     user_key_name = hdis_user.getRawKeyName()
@@ -231,6 +231,16 @@ def getS3UserFolders():
     user_folders = list(set(user_folders))
     user_folders.sort()
     return user_folders
+
+def clearFileFromUsers(filename):
+    print "deleting: " + str(filename)
+    users = HowDoISpeakUser.objects.all()
+    bucket = getHDISBucket()
+    for user in users:
+        print "... " + str(user.user_pin)
+        s3_folder = user.getS3Folder()
+        s3_key_name = s3_folder + filename
+        bucket.delete_keys([s3_key_name])
 
 # REGISTER RAW DATA AND MOVE IT TO USER FOLDERS
 # ======================================================================================================================

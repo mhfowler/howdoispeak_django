@@ -18,7 +18,9 @@ def calcGroupFreqDicts(raw_key, resolution):
     except:
         data_dict = {}
     data_counts = data_dict.setdefault("counts", {})     # dictionary mapping (hour,day,month,year) to word counts
+    print "***...by month...***"
     total_freq_dict, by_month_freqs = calcFreqDicts(data_counts, resolution="month")
+    print "***...by day...***"
     total_freq_dict, by_day_freqs = calcFreqDicts(data_counts, resolution="day")
     return total_freq_dict, by_month_freqs, by_day_freqs
 
@@ -41,15 +43,19 @@ def calcFreqDicts(data_counts, resolution="month"):
     total_text_blob = ""
     # aggregate text blobs by resolution
     for time_key, text_data in data_counts.items():
+        print time_key
         word_counts = text_data["1"]
         time_tuple = getTimeTupleFromTimeString(time_key, resolution)
+        print time_tuple
         text_blob = generateTextBlogFromCounts(word_counts)
         relevant_blob = resolution_dict.setdefault(time_tuple, "")
         resolution_dict[time_tuple] = relevant_blob + " " + text_blob
         total_text_blob += text_blob
     # calculate freqs dict for each time interval
+    print "========================="
     all_freqs_dicts = {}
     for time_tuple, text_blob in resolution_dict.items():
+        print time_tuple
         time_key = makeTimeKeyFromTimeTuple(time_tuple)
         freq_dict = getFreqDictFromText(text_blob)
         all_freqs_dicts[time_key] = freq_dict
@@ -67,7 +73,7 @@ def getFreqDictFromText(txt):
     for word in tokens:
         total_num_words += 1
         word = word.lower()
-        if word.isalpha(): # drop all non-words
+        if word.isalpha(): # drop all non-words #TODO: make this better
             clean_tokens.append(word)
 
     # make frequency distribution of words
