@@ -1,15 +1,17 @@
-# this job takes in a file name from s3
-# gives them a unique id, stores this user in the database with their email and user_pin,
-# creates an s3 folder with the name of their user_pin, then deletes the users file from /raw/ (wherever it was)
-from settings.common import getHDISBucket
-from hdis.models import HowDoISpeakUser
-import json, random, re
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
+from hd_jobs.common import *
 
+# REGISTER RAW DATA AND MOVE IT TO USER FOLDERS
+# ======================================================================================================================
 
-def moveRawData(s3_key):
-    print "moving"
+# move all data in raw (that has been recently uploaded) to its own user folders, while tracking these users in the db
+def registerAllRawData():
+    keys_list = getS3RawKeys()
+    for s3_key in keys_list:
+        moveAndRegisterRawData(s3_key)
+
+# move data from s3 key to new user folder while registering it in database
+def moveAndRegisterRawData(s3_key):
+    print "moving: " + str(s3_key.key)
     bucket = getHDISBucket()
 
     json_string = s3_key.get_contents_as_string()
@@ -39,9 +41,19 @@ def moveRawData(s3_key):
     # delete old key
     bucket.delete_key(s3_key.name)
 
+    user.enqueued = True
+    user.save()
+
     return user
 
-
-if __name__ == "__main__":
-    # enqueuAll()
-    print "move"
+# return all keys in the raw folder
+def getS3RawKeys():
+    bucket = getHDISBucket()
+    keys = bucket.list()
+    keys_list = []
+    for key in keys:
+        name = key.name
+        result = re.match("raw/.+", name)
+        if result:
+            keys_list.append(key)
+    return keys_list

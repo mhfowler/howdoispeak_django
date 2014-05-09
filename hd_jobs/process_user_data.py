@@ -1,51 +1,27 @@
-from hd_jobs.move_raw_data import moveRawData
+from hd_jobs.common import *
 from hd_jobs.add_user_to_groups import addUserToGroups, clearGroup
-from hd_jobs.calculate_word_freq import calcFreqDicts, calcGroupFreqDicts, calcUserFreqDicts
+from hd_jobs.move_raw_data import registerAllRawData
+from hd_jobs.process_group_data import recalcGroupData
+from hd_jobs.calculate_word_freq import calcUserFreqDicts
 from hd_jobs.sentiment import calcSentimentByPersonFromRawJSON, calcSentimentByHourFromRawJSON
-from settings.common import getHDISBucket, getOrCreateS3Key, SECRETS_DICT, PROJECT_PATH
-import re, json, os
-from hdis.models import HowDoISpeakUser
-from boto.s3.key import Key
-from common.text_data import TextData
 
+# JOBS FOR USERS
+# ======================================================================================================================
 
-# =====================================================================================================================
-
-def recalcGroupFreqs():
-    print "** recalculating group freqs **"
-    bucket = getHDISBucket()
-    group_keys = getS3GroupKeys()
-    for group_key in group_keys:
-        total_freq, month_freqs = calcGroupFreqDicts(group_key, "month")
-        new_key_name = group_key.name.replace("raw.json","freq.json")
-        new_key = Key(bucket)
-        new_key.key = new_key_name
-        to_write_dict = {
-            "total_freq":total_freq,
-            "month_freqs":month_freqs
-        }
-        new_key.set_contents_from_string(json.dumps(to_write_dict))
-
-def recalcMostAbnormal():
-    users = HowDoISpeakUser.objects.filter(processed=True)
-    for user in users:
-        calcMostAbnormal(user.user_pin)
-
-# =====================================================================================================================
-
-# user jobs
 def calcUserFreqs(user_pin):
+    print ""
     bucket = getHDISBucket()
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     user_key_name = hdis_user.getRawKeyName()
     user_key = bucket.get_key(user_key_name)
-    total_freq,month_freqs = calcUserFreqDicts(user_key, "month")
+    total_freq,month_freqs,day_freqs = calcUserFreqDicts(user_key)
     new_key_name = user_key.name.replace("raw.json","freq.json")
     new_key = Key(bucket)
     new_key.key = new_key_name
     to_write_dict = {
         "total_freq":total_freq,
-        "month_freqs":month_freqs
+        "month_freqs":month_freqs,
+        "day_freqs":day_freqs
     }
     new_key.set_contents_from_string(json.dumps(to_write_dict))
 
@@ -77,25 +53,46 @@ def calcMostAbnormal(user_pin):
     except:
         print "+EE+: can't calculate most abnormal before group freq."
         return
+    group_raw_key_name = "groups/all/raw.json"
+    group_raw_key, group_raw_dict = getOrCreateS3Key(group_raw_key_name)
+    group_vocab = group_raw_dict["vocab"]
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     user_freq_key_name = hdis_user.getFreqKeyName()
     user_freq_key, user_freq_dict = getOrCreateS3Key(user_freq_key_name)
     user_total_freqs = user_freq_dict["total_freq"]
     user_total_freqs_list = user_total_freqs.items()
-    def sort_fun(x):
-        word = x[0]
-        f = x[1]
+    user_most_abnormal_words = map(lambda x: {"word":x[0],"freq":x[1]}, user_total_freqs_list)
+    user_vocab = map(lambda x: x[0], user_total_freqs_list)
+    user_unique = set(user_vocab).difference(set(group_vocab["1"])) # if only one user has said a word, it is unique to the user
+    real_words = set(group_vocab["3"]) # real words are words which at least two users have said
+    for x in user_most_abnormal_words:
+        word = x["word"]
+        f = x["freq"]
         group_f = group_total_freqs.get(word)
         if not group_f:
-            return 1
+            ratio = 1000
         else:
-            return f / float(group_f)
-    user_total_freqs_list.sort(key=sort_fun, reverse=True)
-    user_most_abnormal_words = map(lambda x:x[0], user_total_freqs_list)
-    abnormal_key_name = user_freq_key_name.replace("freq.json","abnormal.json")
+            ratio = f / float(group_f)
+        if (ratio > 1):
+            x["often"] = True
+            x["ratio_word"] = str(int(ratio))
+        else:
+            x["often"] = False
+            x["ratio_word"] = "1/" + str(int(1/ratio))
+        x["ratio"] = ratio
+
+    user_most_abnormal_words.sort(key=lambda x: x["ratio"], reverse=True)
+    user_most_abnormal_real_words = filter(lambda x: x["word"] in real_words, user_most_abnormal_words)
+    # write most abnormal usage
+    to_write = {
+        "vocab_size":len(user_vocab),
+        "abnormal":user_most_abnormal_real_words,
+        "unique":list(user_unique)
+    }
+    abnormal_key_name = hdis_user.getAbnormalKeyName()
     abnormal_key = Key(bucket)
     abnormal_key.key = abnormal_key_name
-    abnormal_key.set_contents_from_string(json.dumps(user_most_abnormal_words))
+    abnormal_key.set_contents_from_string(json.dumps(to_write))
 
 
 def calcByTime(user_pin):
@@ -106,7 +103,7 @@ def calcByTime(user_pin):
     user_key = bucket.get_key(user_key_name)
     user_td = TextData()
     user_td.loadFromS3Keys([user_key])
-    user_td.calcByTime()
+    user_td.calcByTime(resolution="hour")
     user_by_time = user_td.getJSONDumpableByTime()
     by_time_key_name = hdis_user.getByTimeKeyName()
     by_time_key, by_time_key_dict = getOrCreateS3Key(by_time_key_name)
@@ -114,6 +111,7 @@ def calcByTime(user_pin):
 
 
 def calcCategories(user_pin):
+    print "categories: " + str(user_pin)
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     raw_key_name = hdis_user.getRawKeyName()
     by_time_key_name = hdis_user.getByTimeKeyName()
@@ -127,24 +125,41 @@ def calcCategories(user_pin):
     categories_key, categories_dict = getOrCreateS3Key(categories_key_name)
     categories_key.set_contents_from_string(json.dumps(to_write))
 
-def calcSentiment(user_pin):
+
+def calcSentimentByPerson(user_pin):
+    print "sentiment by person: " + str(user_pin)
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
     raw_key_name = hdis_user.getRawKeyName()
     raw_key, raw_key_dict = getOrCreateS3Key(raw_key_name)
     raw_key_json = raw_key.get_contents_as_string()
-    sent_file_path = os.path.join(PROJECT_PATH, "/static/AFINN-111.txt")
+    sent_file_path = os.path.join(PROJECT_PATH, "static/AFINN-111.txt")
+    sent_file = open(sent_file_path, "r")
+    sentiment_by_person = calcSentimentByPersonFromRawJSON(raw_key_json, sent_file)
+    sentiment_by_person_key_name = hdis_user.getSentimentByPersonKeyName()
+    bucket = getHDISBucket()
+    sentiment_by_person_key = Key(bucket)
+    sentiment_by_person_key.key = sentiment_by_person_key_name
+    sentiment_by_person_key.set_contents_from_string(sentiment_by_person)
+
+
+def calcSentimentByHour(user_pin):
+    print "sentiment by hour: " + str(user_pin)
+    hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)
+    raw_key_name = hdis_user.getRawKeyName()
+    raw_key, raw_key_dict = getOrCreateS3Key(raw_key_name)
+    raw_key_json = raw_key.get_contents_as_string()
+    sent_file_path = os.path.join(PROJECT_PATH, "static/AFINN-111.txt")
     sent_file = open(sent_file_path, "r")
     sentiment_by_hour = calcSentimentByHourFromRawJSON(raw_key_json, sent_file)
-    sentiment_by_person = calcSentimentByPersonFromRawJSON(raw_key_json, sent_file)
-    sentiment_by_person_key_name = hdis_user.getSentinmentByPersonKeyName()
     sentiment_by_hour_key_name = hdis_user.getSentimentByHourKeyName()
     bucket = getHDISBucket()
     sentiment_by_hour_key = Key(bucket)
     sentiment_by_hour_key.key = sentiment_by_hour_key_name
     sentiment_by_hour_key.set_contents_from_string(sentiment_by_hour)
-    sentiment_by_person_key = Key(bucket)
-    sentiment_by_person_key.key = sentiment_by_person_key_name
-    sentiment_by_person_key.set_contents_from_string(sentiment_by_person)
+
+
+# FIGURE OUT WHICH JOBS TO RUN ON WHICH USERS (who have already been registered in database)
+# ======================================================================================================================
 
 # check which jobs have been performed on a particular user_pin, by looking at which output files exist in that users folder
 def whichJobsCompleted(user_pin):
@@ -160,7 +175,7 @@ def whichJobsCompleted(user_pin):
     return jobs_completed
 
 
-ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json","categories.json","sentiment_by_person.txt"] # all jobs to be done in order
+ALL_USER_JOBS = ["by_time.json","freq.json","most_used.json","abnormal.json","categories.json","sentiment_by_person.txt","sentiment_by_hour.txt"] # all jobs to be done in order
 def processUserPin(user_pin, force=False):
     print "processing: " + str(user_pin)
     jobs_completed = whichJobsCompleted(user_pin)
@@ -172,21 +187,12 @@ def processUserPin(user_pin, force=False):
                 "most_used.json":calcMostUsed,
                 "abnormal.json":calcMostAbnormal,
                 "categories.json":calcCategories,
-                "sentiment_by_person.txt":calcSentiment,
+                "sentiment_by_person.txt":calcSentimentByPerson,
+                "sentiment_by_hour.txt":calcSentimentByHour,
             }
             job_function_map[job](user_pin)
     # add user to groups is based on which groups are in tracker
     addUserToGroups(user_pin)
-
-
-# job handling and management
-#######################################################################################################################
-
-def registerRawData(s3_key):
-    print "registering: " + str(s3_key.name)
-    user = moveRawData(s3_key)
-    user.enqueued = True
-    user.save()
 
 def processAllUsers():
     users = HowDoISpeakUser.objects.all()
@@ -195,28 +201,7 @@ def processAllUsers():
         user.processed = True
         user.save()
 
-def getS3RawKeys():
-    bucket = getHDISBucket()
-    keys = bucket.list()
-    keys_list = []
-    for key in keys:
-        name = key.name
-        result = re.match("raw/.+", name)
-        if result:
-            keys_list.append(key)
-    return keys_list
-
-def getS3GroupKeys():
-    bucket = getHDISBucket()
-    keys = bucket.list()
-    keys_list = []
-    for key in keys:
-        name = key.name
-        result = re.match("groups/.+", name)
-        if result:
-            keys_list.append(key)
-    return keys_list
-
+# returns list of the names of the folders of all users on s3
 def getS3UserFolders():
     bucket = getHDISBucket()
     keys = bucket.list()
@@ -227,22 +212,20 @@ def getS3UserFolders():
         if result:
             folder_name = result.group(0)
             user_folders.append(folder_name)
+    user_folders = list(set(user_folders))
+    user_folders.sort()
     return user_folders
 
-
-def registerAllRawData():
-    keys_list = getS3RawKeys()
-    for s3_key in keys_list:
-        registerRawData(s3_key)
+# REGISTER RAW DATA AND MOVE IT TO USER FOLDERS
+# ======================================================================================================================
 
 
-def mainFun():
-    recalcGroupFreqs()
+# clear group calcs and reprocess all user and recalculate group data
+def reprocessAllUsers():
     registerAllRawData()
     clearGroup("groups/all/")
     processAllUsers()
-    recalcGroupFreqs()
-    recalcMostAbnormal()
+    recalcGroupData()
 
 if __name__ == "__main__":
-    mainFun()
+    reprocessAllUsers()

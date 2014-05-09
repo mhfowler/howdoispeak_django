@@ -11,6 +11,7 @@ def perform_sentiment_analysis_by_person(data, sent_file):
     scores = create_sentiment_map(sent_file)
     json_data = json.loads(data)
     user_name = json_data['user_meta']['user_name']
+    list_name_score = []
 
     conversations = json_data['counts']
     for participants in conversations:
@@ -34,10 +35,16 @@ def perform_sentiment_analysis_by_person(data, sent_file):
                         num_words += 1
                     conversation_score += sentiment
 
-        if conversation_score != 0:
-            to_return += other_participant + ": " + str(conversation_score / num_words) + "\n"
+        if num_words != 0:
+            list_name_score.append((other_participant, conversation_score / num_words));
         else:
-            to_return += other_participant + ": 0" + "\n"
+            list_name_score.append((other_participant, 0));
+
+    sorted_list_name_score = sorted(list_name_score,key=lambda x: x[1], reverse=True)
+
+    for name_score in sorted_list_name_score:
+        to_return += name_score[0] + ": " + str(round(name_score[1], 1)) + "\n"
+    return to_return.strip()
 
 def perform_sentiment_analysis_by_time(data, sent_file):
 
@@ -89,9 +96,10 @@ def perform_sentiment_analysis_by_time(data, sent_file):
 
     increment = (max_sent - min_sent) / buckets
     
-    to_return += str(min_sent) + "\n"
-    to_return += str(max_sent) + "\n"
-    to_return += str(increment) + "\n"
+    # to_return += "min_sent" + "\n"
+    # to_return += str(min_sent) + "\n"
+    # to_return += "increment" + "\n"
+    # to_return += str(increment) + "\n"
     #TO DO 1 BASED
     bucket_array = [None] * buckets
     cur_len = min_sent
@@ -108,8 +116,21 @@ def perform_sentiment_analysis_by_time(data, sent_file):
                 elif bucket_array[i] >= avg_sent_mat[day][hour]:
                     quantized_mat[day][hour] = i + 1
                     break 
-    to_return += str(quantized_mat) + "\n"
-    return to_return
+
+
+    to_return += 'day\thour\tvalue\n';
+
+    # add values for min and increment
+    to_return += '\t\t' + str(min_sent) + '\n';
+    to_return += '\t\t' + str(increment) + '\n';
+
+
+    for i in range(7):
+        for j in range(24):
+            to_return += str(i+1)+'\t'+str(j+1)+'\t'+\
+                    str(int(quantized_mat[i,j]))+'\n';
+
+    return to_return.strip()
 
 
 def create_sentiment_map(sent_file):
@@ -131,15 +152,17 @@ def process_word(word):
 
 
 def calcSentimentByPersonFromRawJSON(json_data, sent_file):
-    return perform_sentiment_analysis_by_person(str(data).decode("unicode_escape"), sent_file)
+    # return perform_sentiment_analysis_by_person(str(json_data).decode("unicode_escape"), sent_file)
+    return perform_sentiment_analysis_by_person(json_data, sent_file)
 
 def calcSentimentByHourFromRawJSON(json_data, sent_file):
-    return perform_sentiment_analysis_by_time(str(json_data).decode("unicode_escape"), sent_file)
+    # return perform_sentiment_analysis_by_time(str(json_data).decode("unicode_escape"), sent_file)
+    return perform_sentiment_analysis_by_time(json_data, sent_file)
 
 if __name__ == "__main__":
     my_file = open(sys.argv[1])
     sent_file = open(sys.argv[2])
  
     data = my_file.read()
-    perform_sentiment_analysis_by_person(str(data).decode("unicode_escape"), sent_file)
-    #perform_sentiment_analysis_by_time(str(data).decode("unicode_escape"), sent_file)
+    print perform_sentiment_analysis_by_person(str(data).decode("unicode_escape"), sent_file)
+    # print perform_sentiment_analysis_by_time(str(data).decode("unicode_escape"), sent_file)

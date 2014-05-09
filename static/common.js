@@ -46,24 +46,9 @@ $(document).ready(function() {
         }
     });
 
-    function getUserPin() {
-        var user_pin = $("#user_pin").data("user_pin");
-        return user_pin;
-    }
-    function updateWordFreq(word) {
-        var u_pin = getUserPin();
-        $.ajax({
-            url: "/ajax/",
-            type: "POST",
-            data: {action: "getWordFreq", user_pin: u_pin, word:word}
-        }).done(function(data) {
-            $(".word_freq_output").html(data.freq);
-        });
-    }
-    // click to engage
-    $(".word_freq_calculate").click(function(e) {
-        e.preventDefault();
-        var the_word = $(".the_word").val();
-        updateWordFreq(the_word);
-    });
 });
+
+function getUserPin() {
+    var user_pin = $(".user_pin").data("user_pin");
+    return user_pin;
+}

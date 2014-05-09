@@ -12,29 +12,15 @@
         <!-- jquery -->
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1-rc1/jquery.min.js"></script>
     {% load staticfiles %}
-    <script src="{% static "max.js" %}"></script>
-    <script src="{% static "mohsan.js" %}"></script>
-    <script src="{% static "naveed.js" %}"></script>
+    <script src="{% static 'max.js' %}"></script>
+    <script src="{% static 'mohsan.js' %}"></script>
+    <script src="{% static 'naveed.js' %}"></script>
 
 </head>
+
 <body>
 
-<p id="user_pin" data-user_pin="{{ user_pin }}">
-    {{ user_pin }}
-</p>
-
-<div>
-    {% include "max.html" %}
-</div>
-
-<div>
-    {% include "naveed.html" %}
-</div>
-
-<div>
-    {% include "mohsan.html" %}
-</div>
-
+{% include "nav_header.html" %}
 
 
 </body>

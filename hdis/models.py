@@ -45,6 +45,9 @@ class HowDoISpeakUser(XModel):
     def getFreqKeyName(self):
         return self.getS3Folder() + "freq.json"
 
+    def getAbnormalKeyName(self):
+        return self.getS3Folder() + "abnormal.json"
+
     def getByTimeKeyName(self):
         return self.getS3Folder() + "by_time.json"
 
@@ -57,7 +60,7 @@ class HowDoISpeakUser(XModel):
     def getSentimentByPersonKeyName(self):
         return self.getS3Folder() + "sentiment_by_person.txt"
 
-    def getSentimentByHourName(self):
+    def getSentimentByHourKeyName(self):
         return self.getS3Folder() + "sentiment_by_hour.txt"
 
     def getGroupsTrackerKey(self):

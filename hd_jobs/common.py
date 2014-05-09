@@ -1,9 +1,22 @@
-import json, datetime, random
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
-
-import os, json
+from hdis.models import HowDoISpeakUser
+import json, re, random, os, datetime
+from settings.common import getHDISBucket, getOrCreateS3Key
+from boto.s3.connection import S3Connection, Key
 from settings.common import PROJECT_PATH, SECRETS_DICT, getS3Credentials
+
+def makeTimeKeyFromPythonDate(p_date, resolution="day"):
+    hour = p_date.hour
+    day = p_date.day
+    month = p_date.month
+    year = p_date.year
+    if resolution == "hour":
+        return str(hour) + "|" + str(day) + "|" + str(month) + "|" + str(year)
+    elif resolution == "day":
+        return str(day) + "|" + str(month) + "|" + str(year)
+    elif resolution == "month":
+        return str(month) + "|" + str(year)
+    elif resolution == "year":
+        return str(year)
 
 def makeTimeKeyFromTimeTuple(time_tuple):
     time_key = ""
@@ -26,6 +39,23 @@ def getTimeTupleFromTimeString(time_string, resolution="hour"):
         return month,year
     elif resolution == "year":
         return year
+
+def aggregateByTime(by_time, resolution="day"):
+    to_return = {}
+    for time_string, time_dict in by_time:
+        time_tuple = getTimeTupleFromTimeString(time_string)
+        if resolution == "day":
+            time_tuple = time_tuple[-3:]
+        elif resolution == "month":
+            time_tuple = time_tuple[-2:]
+        elif resolution == "year":
+            time_tuple = time_tuple[-1:]
+        time_key = makeTimeKeyFromTimeTuple(time_tuple)
+        aggregate_counts = to_return.setdefault(time_key, {})
+        for word,count in time_dict["1"]:
+            prev_count = aggregate_counts.setdefault(word, 0)
+            aggregate_counts[word] = prev_count + count
+    return to_return
 
 
 class TextData():
@@ -249,7 +279,3 @@ if __name__ == "__main__":
     text_counts = td.calcTextCounts(username)
     for time_key, counts in td.returnOrderedTimeDict(text_counts):
         print str(time_key) + " " + str(counts["all"]) + " " + str(counts["from"]) + " " + str(counts["to"])
-
-
-
-

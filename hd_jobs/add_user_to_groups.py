@@ -1,11 +1,7 @@
+from hd_jobs.common import *
+
 # takes in a user_pin, and adds user count data to all aggregate counts for every group to which that user belongs
 # (for initial version, the only group is the group of all users)
-from hdis.models import HowDoISpeakUser
-from settings.common import getHDISBucket, getOrCreateS3Key
-from common.text_data import TextData, makeTimeKeyFromTimeTuple, getTimeTupleFromTimeString
-from boto.s3.key import Key
-import json, re
-
 def addUserToGroups(user_pin):
     print "grouping: " + str(user_pin)
     bucket = getHDISBucket()
@@ -28,8 +24,6 @@ def addUserToGroup(hdis_user, group_folder):
     group_meta = group_dict.setdefault("group_meta", {"group_name":group_folder})
     group_counts = group_dict.setdefault("counts", {})     # dictionary mapping (hour,day,month,year) to word counts
 
-
-
     # processed users
     group_num_users = group_dict.setdefault("num_users",{}) # dictionary mapping (day,month,year) to number of users who have data from that day
     processed_users = group_meta.setdefault("processed_users",[])
@@ -37,6 +31,8 @@ def addUserToGroup(hdis_user, group_folder):
         print "skipped ... " + group_folder
         return False
     processed_users.append(hdis_user.user_pin)
+
+    # do it
     user_key_name = hdis_user.getRawKeyName()
     bucket = getHDISBucket()
     user_key = bucket.get_key(user_key_name)
@@ -56,12 +52,9 @@ def addUserToGroup(hdis_user, group_folder):
         time_key = makeTimeKeyFromTimeTuple(time_tuple)
         user_word_counts = user_data["1"]
         user_num_texts = user_data["num_texts"]
-        user_text_blob = user_data["text_blob"]
         group_data = group_counts.setdefault(time_key, {})
         group_word_counts = group_data.setdefault("1", {})
         group_num_texts = group_data.setdefault("num_texts", 0)
-        group_text_blob = group_data.setdefault("text_blob", "")
-        group_data["text_blob"] = group_text_blob + " " + user_text_blob
         group_data["num_texts"] = group_num_texts + user_num_texts
         for word,count in user_word_counts.items():
             prev_count = group_word_counts.setdefault(word, 0)

@@ -1,11 +1,16 @@
 from hd_jobs.add_user_to_groups import addUserToGroup, clearGroup
-from hd_jobs.process_raw_data import registerAllRawData, recalcGroupFreqs, mainFun, recalcMostAbnormal, calcByTime
+from hd_jobs.process_user_data import registerAllRawData,  calcByTime, getS3UserFolders, processAllUsers, calcUserFreqs, calcMostAbnormal
+from hd_jobs.process_group_data import recalcGroupData
 from hdis.models import HowDoISpeakUser
+from hd_jobs.common import *
 
 if __name__ == "__main__":
-    # addUserToGroup("6996200796") # add max to group
-    # enqueuAll()
-    # recalcGroupFreqs()
-    mainFun()
-    # recalcGroupFreqs()
-    # recalcMostAbnormal()
+    # getS3UserFolders()
+    # processAllUsers()
+    # users = HowDoISpeakUser.objects.all()
+    # for user in users:
+        # calcMostAbnormal(user.user_pin)
+    #     calcUserFreqs(user.user_pin)
+    # calcUserFreqs(4163380919)
+    # recalcGroupData()
+    calcMostAbnormal(4163380919)
