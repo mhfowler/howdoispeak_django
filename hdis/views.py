@@ -29,6 +29,9 @@ def html_response(request, template, data_dict=None):
 def home(request):
     return  html_response(request=request, template="landing.html")
 
+def writeup(request):
+    return  html_response(request=request, template="writeup.html", data_dict={"user_pin":4163380919})
+
 @ensure_csrf_cookie
 def user_page(request, user_pin):
     hdis_user = HowDoISpeakUser.objects.get(user_pin=user_pin)

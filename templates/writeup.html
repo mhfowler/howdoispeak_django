@@ -1,0 +1,132 @@
+{% extends "base_page.html" %}
+
+{% block style_block %}
+    <style>
+        .writeup-container {
+            padding-bottom:50px;
+        }
+    </style>
+{% endblock %}
+
+{% block body_block %}
+
+    <div class="writeup-container">
+
+        <h2>HowDoISpeak: Personal Analytics with SMS Word Frequency Data</h2>
+
+        <p>
+            We analyzed SMS word frequency data uploaded by 17 of our friends. We wanted to use this data to answer questions for individuals
+            about the way they speak to gain insight into their own lives and their relationships (and for mirror-like amusement).
+            What time of day do you send the happiest sounding texts, who do you send the happiest
+            sounding texts to, what words do you use abnormally often, what topics do you speak about the most and how big is your vocabulary?
+        </p>
+        <p>
+            We acquired our dataset by building a landing page describing the intention of our project which included a link to download a script that would allow users
+            to upload their SMS word frequency data to a bucket in amazon S3. The landing page is still up and functioning here: <a href="/home/">http://howdoispeak.com</a>.
+            By posting this link on facebook, we were able to get 17 people
+            to upload their SMS word frequency data which we then analyzed with three different approaches described below.
+        </p>
+
+        <p>
+            The results turned out to be pretty interesting. This is a very open ended project though, I think there is a lot of personal insight
+            that could be gained from interesting analyses and visualizations of our lives through the way we text.
+        </p>
+
+        <p>
+            It's not too late to get your texts analyzed too! Everything we built is automated into jobs so if you visit <a href="/home/">http://howdoispeak.com</a>
+            and upload your SMS data, our heroku server will initiate a set of jobs to process the data and then email you a secret link to view your results when the analysis is finished.
+        </p>
+
+        <h2>Frequency Analysis</h2>
+
+        <p>
+            I wanted to find interesting patterns in the different words you use over time as well as the frequency with which you use words compared to
+            average.
+        </p>
+
+        <p>
+            I aggregated the word usage of all the users in our data set to figure out how many users had used different words (some rare words only one user had
+            used, others words had been used by two or three or more users). The <a href="/unique/{{ user_pin }}/">unique page</a> shows you the words which only you have used. A lot of these words
+            end up being typos and mashed up combinations of words but I found this to actually be a very informative and entertaining summary of the way we speak.
+        </p>
+        <p>
+            You may have to see your own unique words to understand but my best rationalization of why it is so interesting is two ideas. One, we probably make typos
+            with a fairly uniform randomness, so the words we make typos on end up being about topics which we speak about alot and thus are somewhat defining of us. Two,
+            the slang and rare words we use are some of the most interesting things about the way we speak and are often tied into our most defining and meaningful relationships
+            and pastimes.
+        </p>
+        <p>
+            Of words which at least 3 users had said (some evidence that these are real words and not just typos) I calculated which words users used most frequently compared to
+            average by sorting all words you had used by the ratio of your frequency to the frequency of usage in the group as a whole. <a href="/abnormal/{{ user_pin }}/">The abnormal list</a> shows you words which
+            you used abnormally often as well as words which you use abnormally seldomly, both of which were very informative about the way you speak and what defines you as
+            a person &mdash; once again in a way that is subtle that it more verges towards an artistic self portrait even though its basis is in quantitative analysis. For instance
+            I found that I used the word consciousness 11x more often than the average user in our dataset &mdash; it's hard to say exactly what this means but it is
+            definitely interesting!
+        </p>
+        <p>
+            Finally I used d3 to visualize the frequency you use words over time in a <a href="/frequency/{{ user_pin }}/">line graph</a>. You can enter a word in an input and then click calculate
+            and it graphs your frequency of use of that word over your entire text history (by month). I experimented with graphing by day, by month as well
+            as with a variety of forms of interpolation &mdash; given that many words you use only occasionally it was difficult to find an effective way of visualizing this data
+            but I am pretty happy with the end result &mdash; you can even iteratively search and graph one line on top of another with the correct relative positioning.
+        </p>
+        <p>
+            Below are some links to screenshots of less good line graphs which I made on the way to the final product.
+        </p>
+        <ul>
+            <li><a href="https://www.dropbox.com/s/r4tm9o9a1ifp1tm/Screenshot%202014-05-08%2023.28.33.png">work freq by day</a> </li>
+            <li><a href="https://www.dropbox.com/s/zfftazupe704zcv/Screenshot%202014-05-08%2023.29.20.png">party freq by day</a> </li>
+            <li><a href="https://www.dropbox.com/s/xoony3a8mcwbqff/Screenshot%202014-05-09%2000.23.25.png">party freq by month</a> </li>
+            <li><a href="https://www.dropbox.com/s/spmxond42346t1t/Screenshot%202014-05-09%2000.24.55.png">gcb freq by month</a> </li>
+            <li><a href="https://www.dropbox.com/s/3e35pydw4osj9rv/Screenshot%202014-05-09%2002.24.40.png">cool bug</a> </li>
+        </ul>
+
+        <h2>Category Analysis</h2>
+        <p>For this part of the assignment, we analyzed your word frequency and split your texts into different category. This was done by taking the sum of the frequencies of words that are in each category. We did it this way rather than by using a machine learning algorithm to categorize for us because we actually couldn't find any training data for categories, and we didn't have enough data to create our own training corpus by labelling categories ourselves.</p>
+        <p>So, we created categories ourselves and added words we thought belonged in those categories. Then, we took the frequencies of the words in all of your texts and mapped them to the categories to create a category distribution.</p>
+        <p>We also analyzed your categories by conversation. So you can actually select one of your contacts and see the category distribution of your conversations!</p>
+        <p>Because we created our own categories with our own words, we definitely missed some words that could go into these categories, and our list of categories is no where near comprehensive. Thus, some conversations were actually left out because we couldn't extract enough data to create a viable analysis.</p>
+
+        <h2>Sentiment Analysis</h2>
+        <h4>Problem</h4>
+        <p>Using the text conversations, we wanted to conduct sentiment analysis on the data. This can produce several interesting results. We will explore the following:</p>
+
+        <ul>
+            <li>Calculate the sentiment of your conversations per person with different people.</li>
+            <li>Calculate a sentiment for each hour of the week.</li>
+        </ul>
+
+        <p>
+            These calculations will allow a user to see how their happy or unhappy the conversations are with their friends. It will also allow people to analyze what time and days they are the happiest on. This information will be visualized in the form of a heatmap as was done in Assignment 4.
+        </p>
+
+
+        <h4>Hypothesis</h4>
+        <p>
+            We predict that this tasks will yield interesting results. However, given the nature of texting, a sentiment may not correlate with how friendly you are with an individual. Rather it will correlate only with the language of your texts.
+        </p>
+
+        <h4>Methodology</h4>
+        <p>
+            The program analyzes each conversation individually to calculate sentiments per person. It looks up each word in a list that maps words to their sentiments. This program only uses 1-grams to evaluate sentiments.
+        </p>
+
+        <p>
+            For computing sentiment per hour of the week: We loop through the tweets, we will store the sum of the sentiments from a conversation from a particular day and hour in a dictionary. We will also store the total number of words. After going through all the messages in all conversations, we will loop through the dictionary and divide the sum of the sentiments of the messages by the number of words to obtain the average sentiment of messages during each hour in a week and store it in another dictionary. Last, we will associate each day/time combination with a bucket (10 buckets were used above). This is simply used so that each day/time combination can be color coded in a D3 visualization.
+        </p>
+
+
+        <h4>Results</h4>
+        <p>
+            While it is definitely interesting to see the results, it is difficult to establish any clear correlation between your relationship between the conversation participants and the sentiment of the text.
+        </p>
+
+        <p>
+            This analysis would have been more precise if a more extensive sentiment file was available. Further, abbreviations and misspelled words make it difficult to deduce a sentiment from.
+        </p>
+
+        <p>
+            One interesting trend that we did see was that different individuals had different times when their sentiments were the highest or lowest. Generally, the day of the week did not affect this, although the time of the day did.
+        </p>
+    </div>
+
+{% endblock %}

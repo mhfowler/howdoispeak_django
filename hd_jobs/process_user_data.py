@@ -124,7 +124,7 @@ def calcSentimentByPerson(user_pin):
     bucket = getHDISBucket()
     sentiment_by_person_key = Key(bucket)
     sentiment_by_person_key.key = sentiment_by_person_key_name
-    sentiment_by_person_key.set_contents_from_string(json.dumps(sentiment_by_person))
+    sentiment_by_person_key.set_contents_from_string(sentiment_by_person)
 
 
 def calcSentimentByHour(user_pin):
@@ -140,7 +140,7 @@ def calcSentimentByHour(user_pin):
     bucket = getHDISBucket()
     sentiment_by_hour_key = Key(bucket)
     sentiment_by_hour_key.key = sentiment_by_hour_key_name
-    sentiment_by_hour_key.set_contents_from_string(json.dumps(sentiment_by_hour))
+    sentiment_by_hour_key.set_contents_from_string(sentiment_by_hour)
 
 
 def calcCategoriesByPerson(user_pin):

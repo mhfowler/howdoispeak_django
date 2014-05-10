@@ -73,7 +73,7 @@ $(document).ready(function() {
     var colors = [];
 
     function initLineGraph() {
-        svg = d3.select("body").append("svg")
+        svg = d3.select("main-container").append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")

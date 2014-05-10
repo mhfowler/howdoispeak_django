@@ -1,12 +1,13 @@
 from django.conf.urls import patterns, include, url
 from hdis.views import viewWrapper, home, redirect, user_page, sentiment_page, category_page, \
-    frequency_page, unique_page, ajaxAction, abnormal_page
+    frequency_page, unique_page, ajaxAction, abnormal_page, writeup
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = patterns('',
 
    (r'^home/$', viewWrapper(home)),
+   (r'^writeup/$', viewWrapper(writeup)),
    (r'^ajax/$', viewWrapper(ajaxAction)),
    (r'^sentiment/(\S+)/$', viewWrapper(sentiment_page)),
    (r'^category/(\S+)/$', viewWrapper(category_page)),
